@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Figma → WordPress Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* Light theme — off-white (米白) background, deep brown text */
+    --bg-deep:#f3ecdb;       /* off-white edge */
+    --bg:#faf5e8;            /* main slide bg — clean 米白 */
+    --line:rgba(60,46,30,.16);
+    --gold:#8a7449;          /* deep gold for accents */
+    --gold-soft:#a89065;     /* mid gold */
+    --gold-bright:#5a4a2a;   /* deepest gold for emphasis */
+    --ink:#1a1612;           /* main body text — almost black */
+    --ink-soft:#3a3228;      /* secondary text */
+    --muted:#5a5043;         /* muted body text */
+    --dim:#857a6a;           /* deck-footer / counter */
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%; overflow:hidden;}
+  body{
+    background:#2a2520;
+    color:var(--ink);
+    font-family:"Noto Sans TC", system-ui, sans-serif;
+    font-weight:400;
+    line-height:1.6;
+  }
+
+  /* ════════════ 16:9 Locked Stage ════════════ */
+  /* All slides are designed at fixed 1920×1080; .deck transforms to fit any window with letterbox. */
+  .stage-wrap{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+    background:#2a2520;
+  }
+  .deck{
+    position:relative;
+    width:1920px;
+    height:1080px;
+    transform-origin:0 0;
+    background:var(--bg-deep);
+  }
+
+  /* ════════════ Slide ════════════ */
+  .slide{
+    position:absolute; inset:0;
+    padding:90px 120px;
+    display:flex; flex-direction:column;
+    opacity:0;
+    visibility:hidden;
+    transition:opacity .5s ease;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse at 12% 8%, rgba(138,116,73,.06), transparent 45%),
+      radial-gradient(ellipse at 88% 92%, rgba(90,74,42,.05), transparent 50%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+  }
+  .slide.is-active{ opacity:1; visibility:visible; }
+
+  /* ════════════ Typography (min 36px enforced) ════════════ */
+  h1, h2, h3, .serif{ font-family:"Noto Serif TC", serif; font-weight:500; color:var(--ink); }
+  h1{ font-size:110px; letter-spacing:10px; line-height:1.18; }
+  h2{ font-size:64px; letter-spacing:8px; line-height:1.22; }
+  h3{ font-size:44px; letter-spacing:5px; line-height:1.3; }
+  p, li, .body{ font-size:38px; line-height:1.6; color:var(--ink); }
+  .lead{ font-size:42px; color:var(--ink-soft); letter-spacing:1.5px; line-height:1.55; }
+  .sub{ color:var(--muted); }
+  .accent{ color:var(--gold); }
+  .dim{ color:var(--dim); }
+  strong{ color:var(--gold-bright); font-weight:600; }
+  code{
+    font-family:"JetBrains Mono", monospace;
+    font-size:36px;
+    color:var(--gold-bright);
+    background:rgba(138,116,73,.14);
+    padding:3px 10px;
+    border-radius:4px;
+  }
+  .small{ font-size:36px; }
+
+  /* ════════════ Decorations ════════════ */
+  .slash-title{ line-height:1; }
+  .slash-title::before, .slash-title::after{ display:none; }
+  .step-tag{
+    display:inline-block;
+    padding:10px 28px;
+    border:1px solid var(--gold-soft);
+    color:var(--gold);
+    font-family:"Noto Serif TC", serif;
+    font-size:30px; letter-spacing:5px;
+    margin-bottom:36px;
+    align-self:flex-start;
+  }
+  .gold-line{ display:none; }
+
+  /* ════════════ Layouts ════════════ */
+  .center{ align-items:center; justify-content:center; text-align:center; }
+  .vcenter{ justify-content:center; }
+  .row{ display:flex; gap:48px; }
+  .col{ flex:1; min-width:0; }
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:36px; }
+  .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:32px; }
+
+  /* ════════════ Components ════════════ */
+  .meta-strip{
+    display:flex; gap:40px;
+    margin-top:48px;
+    color:var(--dim);
+    font-size:30px; letter-spacing:4px;
+    text-transform:uppercase;
+  }
+  .meta-strip span{ position:relative; }
+  .meta-strip span:not(:last-child)::after{
+    content:""; position:absolute; right:-20px; top:50%;
+    width:1px; height:18px; transform:translateY(-50%);
+    background:var(--gold-soft); opacity:.5;
+  }
+  .card{
+    padding:28px 32px;
+    background:linear-gradient(180deg, rgba(255,250,238,.6), rgba(255,250,238,.3));
+    border:1px solid var(--line);
+    border-radius:4px;
+  }
+  .card h3{ color:var(--gold-bright); margin-bottom:12px; font-size:42px; }
+  .card .num{
+    font-family:"Noto Serif TC", serif;
+    font-size:30px; letter-spacing:6px; color:var(--gold);
+    margin-bottom:12px;
+  }
+  .card p{ font-size:36px; line-height:1.55; color:var(--ink); }
+  .pipeline{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:18px;
+    margin-top:48px;
+  }
+  .pipeline .node{
+    flex:1;
+    padding:32px 18px;
+    text-align:center;
+    background:rgba(255,250,238,.55);
+    border:1px solid var(--line);
+    border-radius:6px;
+  }
+  .pipeline .node strong{
+    display:block; color:var(--gold-bright);
+    font-family:"Noto Serif TC", serif;
+    font-size:36px; letter-spacing:3px; margin-bottom:10px;
+  }
+  .pipeline .node small{ color:var(--muted); font-size:24px; letter-spacing:1px; line-height:1.4; display:block; }
+  .pipeline .arrow{
+    color:var(--gold);
+    font-size:36px;
+    flex:0 0 auto;
+  }
+  pre{
+    position:relative;
+    background:#1a1612;
+    border:1px solid rgba(60,46,30,.3);
+    border-left:4px solid var(--gold);
+    padding:28px 60px 28px 32px;
+    border-radius:4px;
+    color:#ede4cf;
+    overflow:hidden;
+    font-family:"JetBrains Mono", monospace;
+    font-size:32px; line-height:1.6;
+    letter-spacing:0;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .copy-btn{
+    position:absolute;
+    top:12px; right:12px;
+    padding:6px 14px;
+    background:rgba(217,196,154,.12);
+    border:1px solid rgba(217,196,154,.45);
+    border-radius:4px;
+    color:#d9c49a;
+    font-family:"Noto Sans TC", sans-serif;
+    font-size:20px;
+    letter-spacing:2px;
+    cursor:pointer;
+    transition:all .2s ease;
+    user-select:none;
+    z-index:2;
+  }
+  .copy-btn:hover{
+    background:rgba(217,196,154,.28);
+    border-color:#d9c49a;
+    color:#f4ead5;
+  }
+  .copy-btn.copied{
+    background:#7a9a6a;
+    border-color:#7a9a6a;
+    color:#fff;
+  }
+  pre.lg{ font-size:36px; }
+  pre .k{ color:#d9c49a; }
+  pre .s{ color:#b8d8a8; }
+  pre .c{ color:#8a8478; font-style:italic; }
+  pre .v{ color:#f6efdb; }
+  ul.tidy{ list-style:none; padding-left:0; }
+  ul.tidy li{
+    position:relative;
+    padding-left:32px;
+    margin:18px 0;
+    line-height:1.55;
+    font-size:38px;
+  }
+  ul.tidy li::before{
+    content:""; position:absolute;
+    left:0; top:24px;
+    width:14px; height:1px;
+    background:var(--gold);
+  }
+  .checklist li{ padding-left:42px; }
+  .checklist li::before{
+    content:"✓"; position:absolute;
+    left:0; top:0; width:auto; height:auto; background:transparent;
+    color:var(--gold); font-size:38px; line-height:1.55;
+  }
+  .pitfall{
+    background:linear-gradient(180deg, rgba(180,90,60,.10), rgba(180,90,60,.04));
+    border-left:4px solid #b85a3c;
+    padding:24px 30px;
+    margin:18px 0;
+    border-radius:4px;
+  }
+  .pitfall .label{
+    color:#9c4628;
+    font-size:28px; letter-spacing:5px;
+    margin-bottom:10px;
+  }
+  .pitfall p{ font-size:38px; line-height:1.5; margin:8px 0; color:var(--ink); }
+  .pitfall p.sub{ font-size:34px; color:var(--muted); }
+
+  /* ════════════ Footer / Progress ════════════ */
+  .progress-bar{
+    position:absolute; left:0; right:0; bottom:0;
+    height:4px;
+    background:rgba(60,46,30,.12);
+    z-index:5;
+  }
+  .progress-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    background:linear-gradient(90deg, var(--gold-soft), var(--gold));
+    transition:width .4s ease;
+  }
+  .deck-footer{
+    position:absolute; left:60px; right:60px; bottom:30px;
+    display:flex; justify-content:space-between; align-items:center;
+    color:var(--dim);
+    font-size:24px; letter-spacing:4px;
+    z-index:5;
+    pointer-events:none;
+  }
+  .nav-hint{
+    position:absolute; bottom:60px; right:60px;
+    color:var(--dim);
+    font-size:22px; letter-spacing:2px;
+    opacity:.4;
+    pointer-events:none;
+    z-index:5;
+  }
+  .nav-hint kbd{
+    display:inline-block;
+    padding:3px 10px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    font-family:"JetBrains Mono", monospace;
+    font-size:20px;
+    margin:0 4px;
+  }
+
+  /* ════════════ Cover slide ════════════ */
+  .cover{
+    align-items:flex-start; justify-content:center;
+  }
+  .cover .eyebrow{
+    color:var(--gold);
+    font-family:"Noto Serif TC", serif;
+    font-size:36px; letter-spacing:10px;
+    margin-bottom:36px;
+  }
+  .cover h1 small{
+    display:block;
+    font-size:42px;
+    color:var(--muted);
+    letter-spacing:6px;
+    margin-top:32px;
+    font-weight:400;
+    line-height:1.5;
+  }
+  .cover .signature{
+    margin-top:80px;
+    display:flex; gap:48px;
+    color:var(--dim);
+    font-size:30px; letter-spacing:3px;
+  }
+  .cover::after{
+    content:""; position:absolute;
+    right:-10%; bottom:-15%;
+    width:55%; height:80%;
+    background:radial-gradient(circle, rgba(138,116,73,.10) 0%, transparent 60%);
+    pointer-events:none;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage-wrap">
+<div class="deck" id="deck">
+
+  <!-- ═══════════ 01 COVER ═══════════ -->
+  <section class="slide cover is-active" data-title="封面">
+    <div class="eyebrow">創作邦 ／ 內部教育訓練</div>
+    <h1>Figma → WordPress<br/><span class="accent">用 Claude Code 一句話切版</span><small>用 MCP 串接設計稿與後台<br/>10 分鐘完成一個 section</small></h1>
+    <div class="meta-strip">
+      <span>Workshop</span>
+      <span>90 min</span>
+      <span>11 attendees</span>
+      <span>2026.04</span>
+    </div>
+    <div class="signature">
+      <span>講師 ／ Kevin Kuo</span>
+      <span>創作邦 凱文設計</span>
+    </div>
+  </section>
+
+  <!-- ═══════════ 02 為什麼 ═══════════ -->
+  <section class="slide" data-title="為什麼">
+    <span class="step-tag">WHY ／ 為什麼來</span>
+    <h2 class="slash-title">這場為什麼重要</h2>
+    <div class="gold-line"></div>
+    <p class="lead" style="max-width:1500px; margin-top:24px;">
+      傳統切版：設計師交稿 → 工程師看圖 → 手刻 HTML → 部署 → 來回對 Figma → 改 → 再對。
+      一個 landing page 通常 <strong>2 到 5 個工作天</strong>。
+    </p>
+    <p class="lead" style="max-width:1500px; margin-top:20px;">
+      老師上週用這套打<strong>「理仁牙醫」整頁 9 個 section</strong>，從骨架到上線 v21 改 21 輪、共兩個下午。
+      含滾動動畫、弧形轉場、響應式三斷點、33 張圖資全自動上傳。
+    </p>
+    <div class="grid-3" style="margin-top:60px;">
+      <div class="card">
+        <div class="num">01</div>
+        <h3>速度</h3>
+        <p class="sub">省掉雙手切版時間，把精力放在設計判斷。</p>
+      </div>
+      <div class="card">
+        <div class="num">02</div>
+        <h3>精準</h3>
+        <p class="sub">Claude 直接讀 Figma node 樹，不靠眼睛抓位置。</p>
+      </div>
+      <div class="card">
+        <div class="num">03</div>
+        <h3>可複製</h3>
+        <p class="sub">這套 pipeline 老師正在客戶案實戰跑，今天教你完整套到自己案上。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 03 學完能做什麼 ═══════════ -->
+  <section class="slide" data-title="目標">
+    <span class="step-tag">GOAL ／ 學完能做什麼</span>
+    <h2 class="slash-title">90 分鐘後，你能獨立做這件事</h2>
+    <div class="gold-line"></div>
+    <div class="row" style="margin-top:32px; gap:60px;">
+      <div class="col">
+        <ul class="tidy checklist">
+          <li>用 Claude Code 連到任意 WordPress 站</li>
+          <li>抓 Figma 設計稿並理解結構</li>
+          <li>把 Figma 翻譯成 HTML widget JSON</li>
+          <li>透過 MCP 一鍵部署到 WP 頁面</li>
+          <li>用 headless Chrome 做視覺對比驗證</li>
+          <li>遇到 cache / 權限 / API 問題知道怎麼除錯</li>
+          <li>把這個 pipeline 套到客戶案上</li>
+        </ul>
+      </div>
+      <div class="col" style="display:flex; align-items:center; justify-content:center;">
+        <div class="card" style="text-align:center; padding:48px 36px;">
+          <div class="num">DELIVERABLE</div>
+          <h3 style="margin:18px 0; font-size:48px;">屬於你的<br/>練習頁</h3>
+          <p class="sub" style="margin-top:18px; font-size:36px;">一個你親手切完、跑得動、可以分享連結給人看的真實頁面。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 03B 失敗案：設計稿要為 AI 設計 ═══════════ -->
+  <section class="slide" data-title="失敗案">
+    <span class="step-tag">LESSON ／ 失敗案先講，免得你重踩</span>
+    <h2 class="slash-title">設計稿不能只給人看</h2>
+    <div class="gold-line"></div>
+    <p class="lead" style="margin-top:20px; max-width:1500px; font-size:38px;">
+      <strong>鶴步牙醫</strong>是這套流程踢到鐵板的真實案。問題不在 MCP、不在 Claude，<strong>在 Figma 設計稿本身</strong>。
+    </p>
+    <div class="grid-2" style="margin-top:32px; gap:48px;">
+      <div class="pitfall" style="margin:0;">
+        <div class="label">出了什麼事</div>
+        <p style="font-size:34px;">
+          素材用 Photoshop 風格的<strong>疊加模式</strong>（multiply / screen 之類）讓白底變透明，
+          在 Figma 看視覺很完整。
+        </p>
+        <p class="sub" style="margin-top:14px; font-size:30px;">
+          但 AI 把該圖層 export 成一般 PNG／JPG 給 WP 使用後，
+          <strong>疊加效果消失、白底回來了</strong>，整個視覺崩掉，跟原稿差很多。
+        </p>
+      </div>
+      <div class="card" style="background:linear-gradient(180deg, rgba(138,116,73,.10), rgba(138,116,73,.04));">
+        <div class="num">TAKEAWAY</div>
+        <h3 style="font-size:38px; margin-bottom:14px;">設計階段就要想「AI 會怎麼下載這張圖」</h3>
+        <ul class="tidy" style="margin-top:8px;">
+          <li style="font-size:28px;">透明效果做進素材本身，不靠上層 blend mode</li>
+          <li style="font-size:28px;">每個圖層獨立 export 出來都要是「對的視覺」</li>
+          <li style="font-size:28px;">Mask、特效、調整圖層上線前先 flatten 確認</li>
+          <li style="font-size:28px;">圖層命名、frame 分組要讓 AI 找得到、抓得到</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:28px; color:var(--gold); font-size:32px;">
+      ✦ 結論：Figma 不只是給設計師看，<strong>它是 AI 切版的原料</strong>。原料有問題，後面 pipeline 再強都救不回來。
+    </p>
+  </section>
+
+  <!-- ═══════════ 04 時程 90 min ═══════════ -->
+  <section class="slide" data-title="時程">
+    <span class="step-tag">AGENDA ／ 90 分鐘流程</span>
+    <h2 class="slash-title">時間怎麼用</h2>
+    <div class="gold-line"></div>
+    <div class="grid-2" style="margin-top:36px; gap:36px;">
+      <div class="card">
+        <div class="num">00:00 — 00:20</div>
+        <h3>暖機 + 裝環境</h3>
+        <p class="sub" style="font-size:32px;">
+          開場 → 貼 Slack 帳號分配 → 你貼 STEP 0 prompt 給 Claude Code 自動裝環境，
+          老師同步講「為什麼 / 失敗案 / 架構」三段概念。
+        </p>
+      </div>
+      <div class="card">
+        <div class="num">00:20 — 00:55</div>
+        <h3>跟老師跑一輪</h3>
+        <p class="sub" style="font-size:32px;">
+          換掉 placeholder → 重開 Claude Code →
+          Hello World → 抓 Figma → 翻譯成 HTML → 部署 → 視覺驗證，跑完整 pipeline 一次。
+        </p>
+      </div>
+      <div class="card">
+        <div class="num">00:55 — 01:25</div>
+        <h3>自由切版 + 1:1 解雷</h3>
+        <p class="sub" style="font-size:32px;">
+          挑你想做的 Figma section 練習，卡住舉手老師現場處理。
+        </p>
+      </div>
+      <div class="card">
+        <div class="num">01:25 — 01:30</div>
+        <h3>分享收尾</h3>
+        <p class="sub" style="font-size:32px;">
+          每人秀一下成果，老師補一下「線上客戶案要注意什麼」。
+        </p>
+      </div>
+    </div>
+    <p style="margin-top:30px; color:var(--gold); font-size:34px;">
+      ✦ 目標：90 分鐘內每人產出一個能分享連結給人看的真實頁面。
+    </p>
+  </section>
+
+  <!-- ═══════════ 05 架構圖 ═══════════ -->
+  <section class="slide" data-title="架構">
+    <span class="step-tag">PIPELINE ／ 整體架構</span>
+    <h2 class="slash-title">資料怎麼流動</h2>
+    <div class="gold-line"></div>
+    <p class="lead" style="margin-top:24px; font-size:38px;">理解這張圖你就懂全部了。</p>
+    <div class="pipeline" style="margin-top:60px;">
+      <div class="node">
+        <strong>Figma</strong>
+        <small>設計稿<br/>node 樹 / 字 / 圖 / 位置</small>
+      </div>
+      <span class="arrow">→</span>
+      <div class="node">
+        <strong>Figma MCP</strong>
+        <small>抓 frame 結構<br/>回 JSON</small>
+      </div>
+      <span class="arrow">→</span>
+      <div class="node">
+        <strong>Claude Code</strong>
+        <small>翻譯成<br/>HTML + CSS</small>
+      </div>
+      <span class="arrow">→</span>
+      <div class="node">
+        <strong>Elementor MCP</strong>
+        <small>把 JSON<br/>寫進 WP</small>
+      </div>
+      <span class="arrow">→</span>
+      <div class="node">
+        <strong>WordPress</strong>
+        <small>頁面上線</small>
+      </div>
+    </div>
+    <p style="margin-top:64px; color:var(--muted); font-size:36px;">
+      <span class="accent">驗證迴圈：</span>部署 → 截圖 → 對比 Figma → 改 HTML → 再部署。<br/>
+      整個過程 <strong>你不用碰 WP 後台</strong>。
+    </p>
+  </section>
+
+  <!-- ═══════════ 06 STEP 0 一鍵裝環境 ═══════════ -->
+  <section class="slide" data-title="STEP 0">
+    <span class="step-tag">STEP 0 ／ 課前一鍵裝環境</span>
+    <h2 class="slash-title">把這段貼給 Claude Code</h2>
+    <div class="gold-line"></div>
+    <p class="sub" style="margin-top:12px; font-size:28px;">
+      前提：已裝好 <strong>Claude Code</strong> 並登入。
+    </p>
+    <div class="pitfall" style="margin:12px 0; border-left-color:#8a7449;">
+      <div class="label" style="color:var(--gold-bright);">⚡ 貼之前先做這件事</div>
+      <p style="font-size:30px; margin:6px 0;">
+        在 Claude Code 裡按 <code>Shift</code> + <code>Tab</code> 兩次切到 <strong>Bypass permissions</strong> 模式，
+        畫面下緣會顯示橘色 <code>bypass permissions</code>。
+      </p>
+      <p class="sub" style="font-size:26px; margin-top:4px;">
+        否則安裝過程每個指令都會跳權限對話框，會被打斷十幾次。
+      </p>
+    </div>
+    <p class="sub" style="margin-top:6px; font-size:28px;">把下面這段貼到對話框（右上角點複製）。<span style="color:#9c4628;">⚠ 裡面的 Zeabur token 是老師個人的測試 token，工作坊結束後會作廢，不要貼到別的地方。</span></p>
+    <pre style="margin-top:12px; font-size:19px; line-height:1.5;">請幫我把這台電腦設定成 Figma → WordPress 工作坊環境。按順序執行，每步驟回報結果：
+
+【1. 偵測 OS 並準備套件管理員】
+Mac 用 Homebrew、Windows 用 winget。沒裝就先裝（Mac 第一次可能要先裝 Xcode CLT）。
+
+【2. 確認 / 補裝三個工具】
+- Node.js 18 以上（用 node -v 驗證；版本不夠就升級）
+- Python 3.10 以上（用 python3 --version 驗證）
+- Google Chrome
+
+【3. 寫入 Claude Code 設定檔】
+路徑：~/.claude/settings.json（Windows 是 %USERPROFILE%\.claude\settings.json）
+
+- 檔案不存在 → 建立新檔
+- 檔案已存在 → 先複製一份備份成 settings.json.bak，再把下面這段「合併」進 mcpServers 區塊
+  （絕對不要覆蓋掉其他既有的 MCP 設定）
+- TRAINEE_USERNAME 跟 APP_PASSWORD 先留 placeholder，當天老師會給：
+
+{
+  "mcpServers": {
+    "elementor-mcp": {
+      "command": "npx",
+      "args": ["-y", "elementor-mcp"],
+      "env": {
+        "WP_URL": "https://dbc.zeabur.app",
+        "WP_APP_USER": "TRAINEE_USERNAME",
+        "WP_APP_PASSWORD": "APP_PASSWORD"
+      }
+    },
+    "zeabur": {
+      "command": "npx",
+      "args": ["-y", "@zeabur/mcp-server"],
+      "env": {
+        "ZEABUR_TOKEN": "sk-ahigcc54nfpzzft3hquq6yvvctbpa"
+      }
+    }
+  }
+}
+
+寫完後分別跑一次 npx -y elementor-mcp --help 跟 npx -y @zeabur/mcp-server --help 把兩個套件 cache 下來。
+
+【4. 完全關掉 Claude Code 再重開】
+不是 reload，是 Cmd+Q（Mac）/ 右上角 X（Windows）整個 quit 再開。
+
+【5. 驗證並回報】
+跑 claude mcp list，把結果整理成下面 checklist 給我看：
+- [ ] Node 版本：?
+- [ ] Python 版本：?
+- [ ] Chrome：已裝 / 已補裝
+- [ ] settings.json 寫入路徑：?
+- [ ] settings.json.bak 備份：有 / 無原檔
+- [ ] claude mcp list：elementor-mcp 跟 zeabur 是否都在列表
+
+最後提醒我：「等老師發帳號 → 換掉 settings.json 裡的 placeholder → 再重開一次 Claude Code」。
+
+中間遇到 sudo / 系統權限請求請停下來問我，不要 skip 不要硬猜密碼。</pre>
+    <p style="margin-top:14px; color:var(--gold); font-size:30px;">
+      ✦ 跑一次就好，當天直接接著用。Claude Code 還沒裝就先去 <code>claude.com/claude-code</code> 裝完再回來。
+    </p>
+  </section>
+
+  <!-- ═══════════ 07 STEP 1 設定 MCP ═══════════ -->
+  <section class="slide" data-title="STEP 1">
+    <span class="step-tag">STEP 1 ／ 設定 Claude Code MCP</span>
+    <h2 class="slash-title">把 Elementor MCP 加進設定檔</h2>
+    <div class="gold-line"></div>
+    <p class="sub" style="margin-top:20px; font-size:36px;">編輯 <code>~/.claude/settings.json</code>，加（或合併）這段：</p>
+    <pre style="margin-top:18px; font-size:26px;">{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"elementor-mcp"</span>: {
+      <span class="k">"command"</span>: <span class="s">"npx"</span>,
+      <span class="k">"args"</span>: [<span class="s">"-y"</span>, <span class="s">"elementor-mcp"</span>],
+      <span class="k">"env"</span>: {
+        <span class="k">"WP_URL"</span>: <span class="s">"https://dbc.zeabur.app"</span>,
+        <span class="k">"WP_APP_USER"</span>: <span class="s">"trainee01"</span>,
+        <span class="k">"WP_APP_PASSWORD"</span>: <span class="s">"xxxx xxxx xxxx xxxx xxxx xxxx"</span>
+      }
+    }
+  }
+}</pre>
+    <p style="margin-top:24px; font-size:34px; color:var(--muted);">把 <code>trainee01</code> 改成你的 onboarding.csv 上的帳號，<code>WP_APP_PASSWORD</code> 整組含空格貼上。儲存後 <strong>完全關掉 Claude Code 再重開</strong>（reload 沒用）。</p>
+  </section>
+
+  <!-- ═══════════ 08 STEP 2 第一次連線 ═══════════ -->
+  <section class="slide" data-title="STEP 2">
+    <span class="step-tag">STEP 2 ／ 第一次連線測試</span>
+    <h2 class="slash-title">驗證 MCP 通了</h2>
+    <p class="sub" style="margin-top:24px; font-size:34px;">兩階段確認：先看 MCP 有沒有掛上，再實測能不能讀寫。</p>
+
+    <div class="grid-2" style="margin-top:24px; gap:32px;">
+      <div class="card">
+        <div class="num accent">METHOD 1</div>
+        <h3 style="font-size:36px; margin-bottom:14px;">列出已載入的 MCP</h3>
+        <pre style="font-size:24px; padding:18px 50px 18px 22px;">claude mcp list</pre>
+        <p style="font-size:30px; margin-top:14px;">列表裡應看到 <code>elementor-mcp</code><br/><span class="accent">✓ Connected</span></p>
+      </div>
+      <div class="card">
+        <div class="num accent">METHOD 2</div>
+        <h3 style="font-size:36px; margin-bottom:14px;">在 Claude 對話框問</h3>
+        <pre style="font-size:24px; padding:18px 50px 18px 22px;">請用 elementor mcp 幫我抓
+page <span class="s">9</span> 的內容，列出
+標題、slug、status 給我看</pre>
+        <p style="font-size:30px; margin-top:14px;">Claude 會回頁面 metadata 就代表通了</p>
+      </div>
+    </div>
+
+    <p style="margin-top:24px; color:var(--muted); font-size:30px;">
+      <span style="color:#e6927a;">✗ 失敗：</span>多半是 <strong>application password 空格被吃掉</strong> 或 <strong>設定檔沒重新載入</strong>（Claude Code 要完全關閉重開）。
+    </p>
+  </section>
+
+  <!-- ═══════════ 09 STEP 3 Hello World ═══════════ -->
+  <section class="slide" data-title="STEP 3">
+    <span class="step-tag">STEP 3 ／ Hello World</span>
+    <h2 class="slash-title">第一次部署</h2>
+    <div class="gold-line"></div>
+    <p class="sub" style="margin-top:24px; font-size:36px;">複製右上角，貼到 Claude 對話框（記得把 page 9 改成你自己的 ID）：</p>
+    <pre style="margin-top:18px; font-size:24px;">請用 elementor mcp 把 page 9 的內容整個換成下面這段 HTML，並 publish：
+
+&lt;div style="padding:80px;background:#1a1816;color:#f4ead5;text-align:center;font-family:'Noto Serif TC',serif;"&gt;
+  &lt;h1 style="font-size:48px;letter-spacing:8px;margin:0;"&gt;Hello Workshop&lt;/h1&gt;
+  &lt;p style="margin-top:20px;font-size:24px;"&gt;我的第一個 MCP 部署&lt;/p&gt;
+&lt;/div&gt;
+
+部署完請告訴我頁面 URL，我自己去開來看。</pre>
+    <p style="margin-top:24px; font-size:34px;">部署完開 <code>https://dbc.zeabur.app/trainee-XX/?fresh=now</code>（XX 換成你的編號）。</p>
+    <p style="margin-top:14px; color:var(--gold); font-size:34px;">
+      ✦ 完全沒碰 WP 後台。Claude 直接寫進去了。
+    </p>
+  </section>
+
+  <!-- ═══════════ 10 STEP 4 抓 Figma ═══════════ -->
+  <section class="slide" data-title="STEP 4">
+    <span class="step-tag">STEP 4 ／ 從 Figma 抓設計稿</span>
+    <h2 class="slash-title">讓 Claude 看懂設計</h2>
+    <div class="gold-line"></div>
+    <p class="sub" style="margin-top:20px; font-size:34px;">在 Figma 點 frame → 右鍵 Copy Link，把連結代到下面 prompt：</p>
+    <pre style="margin-top:14px; font-size:24px;">請用 figma mcp 抓這個 frame 的完整結構：
+<span class="s">https://figma.com/design/86JHZin3GoY4LsVq6otoDR/Ritzen?node-id=1-14</span>
+
+依序列給我看：
+1. 整個 frame 的尺寸與背景
+2. 每個元素的相對位置（x,y）、寬高、文字內容
+3. 字型、字級、letter-spacing、行高、顏色（含 alpha）
+4. 圖片資產的 imageRef，是否有 transform 或 filter
+5. 任何疊加模式 / mask / shadow
+
+如果遇到 figma mcp 429（rate limit），改用 Figma REST API。</pre>
+    <p style="margin-top:30px; font-size:36px;">Claude 會回你一棵 node 樹，內含：</p>
+    <ul class="tidy" style="margin-top:14px;">
+      <li>所有圖片資產（image fills + imageRef，含 transform/filter）</li>
+      <li>文字內容、字型、字級、letter-spacing、行高</li>
+      <li>顏色（含 alpha）、漸層、shadow、絕對定位</li>
+    </ul>
+    <p style="margin-top:24px; color:var(--muted); font-size:32px;">
+      <span class="accent">真實踩過：</span><code>fills</code> 陣列<strong>第一個是最上層</strong>（反直覺），照片有 transform/filter 要走 <code>/v1/images?ids=NODE</code> export，不能直接抓 imageRef raw 圖。
+    </p>
+  </section>
+
+  <!-- ═══════════ 11 STEP 5 翻譯成 HTML ═══════════ -->
+  <section class="slide" data-title="STEP 5">
+    <span class="step-tag">STEP 5 ／ 翻譯成 HTML</span>
+    <h2 class="slash-title">兩條路：對話 vs Builder</h2>
+    <div class="gold-line"></div>
+    <div class="grid-2" style="margin-top:40px; gap:48px;">
+      <div class="card">
+        <div class="num">A</div>
+        <h3>純對話控制</h3>
+        <p class="sub" style="margin-top:14px;">叫 Claude 把這個 frame 切成 HTML，部署到 page 9</p>
+        <ul class="tidy" style="margin-top:18px;">
+          <li>適合單一 section 快速做</li>
+          <li>每次調整都靠對話</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num">B</div>
+        <h3>Python Builder</h3>
+        <p class="sub" style="margin-top:14px;">複製 <code>starter-builder.py</code>，改 HTML 後跑指令產 JSON</p>
+        <ul class="tidy" style="margin-top:18px;">
+          <li>適合多 section / 複雜頁面</li>
+          <li>結構版控 friendly</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:48px; color:var(--muted); font-size:36px;">
+      <span class="accent">推薦：</span>第一次用 A 上手，做超過 2 個 section 後切到 B。
+    </p>
+  </section>
+
+  <!-- ═══════════ 12 STEP 6 部署 ═══════════ -->
+  <section class="slide" data-title="STEP 6">
+    <span class="step-tag">STEP 6 ／ 部署到 WP</span>
+    <h2 class="slash-title">一行指令上線</h2>
+    <div class="gold-line"></div>
+    <p class="sub" style="margin-top:18px; font-size:32px;">A. 純對話路線（一段 HTML 直接丟）</p>
+    <pre style="margin-top:10px; font-size:24px;">請用 elementor mcp 把下面這段 HTML 部署到 page 9，status 設為 publish，
+完成後告訴我頁面 URL：
+
+&lt;section style="padding:120px 80px;background:#faf5e8;text-align:center;"&gt;
+  &lt;h1 style="font-size:64px;color:#1a1612;"&gt;這是新 Hero&lt;/h1&gt;
+&lt;/section&gt;</pre>
+    <p class="sub" style="margin-top:18px; font-size:32px;">B. Builder 路線（用 JSON 檔）</p>
+    <pre style="margin-top:10px; font-size:24px;">請用 elementor mcp 把 /tmp/my-page.json 部署到 page 9，
+status 設為 publish，完成後告訴我頁面 URL。
+如果同名 widget 已存在，整段覆蓋掉沒關係。</pre>
+    <p style="margin-top:18px; font-size:32px;">
+      Claude 會呼叫 <code>update_page_from_file</code>，幾秒內就更新。
+      <span class="accent">📌 開頁時加 <code>?fresh=now</code></span> 強制清快取。
+    </p>
+  </section>
+
+  <!-- ═══════════ 13 STEP 7 驗證 + 迭代 ═══════════ -->
+  <section class="slide" data-title="STEP 7">
+    <span class="step-tag">STEP 7 ／ 視覺驗證 + 迭代</span>
+    <h2 class="slash-title">交給 Claude 對版面</h2>
+    <div class="gold-line"></div>
+    <p class="sub" style="margin-top:20px; font-size:34px;">這是工作坊最常用的咒語（記得改成你的 trainee 編號）：</p>
+    <pre style="margin-top:14px; font-size:24px;">請幫我做視覺驗證：
+
+1. 用 headless Chrome 截圖 https://dbc.zeabur.app/trainee-01/?fresh=now
+   window-size 設 1440x6000，存到 /tmp/wp-current.png
+2. 對照我給你的 Figma 原稿（同一個 frame，node-id=1-14）
+3. 列出最明顯的 3 個差異，按重要性排序，每條註明：
+   - 出問題的元素（標題 / 圖片 / 按鈕…）
+   - 差在位置 / 顏色 / 尺寸 / 缺漏 哪一類
+   - 建議怎麼改</pre>
+    <p style="margin-top:20px; font-size:34px;">Claude 會用 headless Chrome 拍圖、做 side-by-side 對比、列差異。</p>
+    <p style="margin-top:18px; color:var(--gold); font-size:34px;">
+      ✦ 改 → 部署 → 截圖 → 比對。每輪 30 秒，2-3 輪就吻合。
+    </p>
+  </section>
+
+  <!-- ═══════════ 14A 踩雷 1/2 ═══════════ -->
+  <section class="slide" data-title="踩雷 1/2">
+    <span class="step-tag">PITFALLS ／ 連線部署類 (1/2)</span>
+    <h2 class="slash-title">前 30 分鐘最常踩的雷</h2>
+    <div class="gold-line"></div>
+    <div style="margin-top:30px;">
+      <div class="pitfall">
+        <div class="label">PITFALL 01</div>
+        <p><strong>Application Password 401 Unauthorized</strong> ／ 複製時空格被吃掉</p>
+        <p class="sub">解：到 WP Profile 重新產一組 → 整組含空格貼到 settings.json，存檔後<strong>完全關掉 Claude Code 再重開</strong>。</p>
+      </div>
+      <div class="pitfall">
+        <div class="label">PITFALL 02</div>
+        <p><strong>部署成功但前台頁面沒變</strong> ／ Elementor 快取沒重建</p>
+        <p class="sub">解 3 選 1：URL 加 <code>?fresh=&lt;時間戳&gt;</code>、WP Admin → Elementor Tools → Regenerate CSS、或部署成 <code>draft</code> 再切 <code>publish</code>。</p>
+      </div>
+      <div class="pitfall">
+        <div class="label">PITFALL 03</div>
+        <p><strong>widget 上設的 <code>css_classes</code> 沒 render 出來</strong> ／ 只有 container 才會輸出</p>
+        <p class="sub">解：CSS selector 改用 <code>.elementor-element-{widget_id}</code>，widget 的 ID 一定會變成 class。</p>
+      </div>
+      <div class="pitfall">
+        <div class="label">PITFALL 04</div>
+        <p><strong>MCP 部署回 <code>true</code> 但前台沒變</strong> ／ 第一次成功、第二次起 silent fail（線上站特別容易）</p>
+        <p class="sub">解：(1) 換一個全新乾淨頁重部署（每個 trainee 一頁）；(2) fallback 走 WP REST <code>POST /wp/v2/pages/{id}</code> 帶完整 meta payload（<code>_elementor_data</code>, <code>_elementor_version</code>, <code>_wp_page_template</code>）。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 14B 踩雷 2/2 ═══════════ -->
+  <section class="slide" data-title="踩雷 2/2">
+    <span class="step-tag">PITFALLS ／ 切版排版類 (2/2)</span>
+    <h2 class="slash-title">理仁牙醫切版時踩出來的雷</h2>
+    <div class="gold-line"></div>
+    <div style="margin-top:30px;">
+      <div class="pitfall">
+        <div class="label">PITFALL 04</div>
+        <p><strong>e-con 容器內建 padding + max-width 1140</strong> ／ 全寬背景永遠縮成 1140 寬</p>
+        <p class="sub">解：section 加 reset：<code>--padding-*:0</code>、<code>--content-width:100%</code>、<code>max-width:100% !important</code>，再用 inner 1440 包置中內容。</p>
+      </div>
+      <div class="pitfall">
+        <div class="label">PITFALL 05</div>
+        <p><strong>絕對定位跑版／圖片跳到下段</strong> ／ 父容器沒 <code>position:relative</code></p>
+        <p class="sub">解：用 HTML widget 自己寫 wrapper 強制 relative。對抗 Elementor 超過 3 個 <code>!important</code> 就停手改 HTML widget，最乾淨。</p>
+      </div>
+    </div>
+    <p style="margin-top:40px; color:var(--gold); font-size:34px;">
+      ✦ 老師理仁案打了 <strong>6 個切版雷</strong>（含 Figma fills 反向、image transform/filter、弧形轉場、GSAP 置中衝突），全列在 <code>CHEATSHEET.md</code>。
+    </p>
+  </section>
+
+  <!-- ═══════════ 14C 圖資 SVG 流程 ═══════════ -->
+  <section class="slide" data-title="圖資 SVG">
+    <span class="step-tag">ASSETS ／ 圖資處理 SOP</span>
+    <h2 class="slash-title">SVG icon 怎麼從 Figma 上 WP</h2>
+    <div class="gold-line"></div>
+    <p class="sub" style="margin-top:14px; font-size:30px;">純線稿、單色 vector 用 SVG 最理想（檔小、可縮放、可改色）。流程五步：</p>
+    <pre style="margin-top:14px; font-size:22px;"><span class="c"># 1. WP 先裝 Safe SVG plugin（沒裝 upload 會擋）</span>
+curl -u "$WP_USER:$WP_PASS" -X POST "$WP_URL/wp-json/wp/v2/plugins" \
+  -H "Content-Type: application/json" \
+  -d '{"slug":"safe-svg","status":"active"}'
+
+<span class="c"># 2. 從 Figma export 出 SVG（要找 instance 內的 icon 子節點，不是整張卡）</span>
+<span class="c">// figma MCP use_figma 跑：</span>
+const card = await figma.getNodeByIdAsync('1:690');
+const circle = card.children.find(c =&gt;
+  Math.round(c.width)===180 &amp;&amp; Math.round(c.height)===180);
+const bytes = await circle.exportAsync({format:'SVG'});
+return { b64: figma.base64Encode(bytes) };
+
+<span class="c"># 3. macOS base64 解碼（旗標不能省，pipe 會炸）</span>
+base64 -d -i icon.b64 -o icon.svg
+
+<span class="c"># 4. 本機驗證三件套</span>
+xmllint --noout icon.svg &amp;&amp; grep -c "&lt;path" icon.svg &amp;&amp; wc -c icon.svg
+
+<span class="c"># 5. 上傳：用 Python urllib，不要 curl + python pipe（控制字元會炸 json.loads）</span>
+python3 -c "import json,base64,urllib.request; ..." <span class="c"># 用 strict=False 解析</span></pre>
+    <p style="margin-top:14px; color:var(--gold); font-size:30px;">
+      ✦ 整段 SOP 在 obsidian <code>sop/figma-to-elementor.md §5</code>，含 3 個 macOS 雷跟 instance icon ID 規則。
+    </p>
+  </section>
+
+  <!-- ═══════════ 14D 部署陷阱：JSON wrap + cache + REST fallback ═══════════ -->
+  <section class="slide" data-title="部署陷阱">
+    <span class="step-tag">DEPLOY ／ 線上站三大坑</span>
+    <h2 class="slash-title">為什麼部署回 <code>true</code> 卻沒生效</h2>
+    <div class="gold-line"></div>
+    <div style="margin-top:30px;">
+      <div class="pitfall">
+        <div class="label">PITFALL 06</div>
+        <p><strong>JSON 雙重編碼</strong> ／ <code>download_page_to_file</code> 下來的檔案開頭是 <code>"[\"id\"...]"</code>（雙引號 = 已被字串化一層）</p>
+        <p class="sub">直接改完丟回去 → MCP 又 wrap 一層 → 三重編碼 → Elementor 讀不到、fallback 舊版且不報錯。寫回前一定先 <code>json.loads</code> 兩次脫到 list，<code>json.dumps</code> 一次寫回。檔頭必須是 <code>[</code>。</p>
+      </div>
+      <div class="pitfall">
+        <div class="label">PITFALL 07</div>
+        <p><strong>Cache 鎖死後續部署</strong> ／ 第一次成功，第二次起 silent fail</p>
+        <p class="sub">本機站有 SQL 直接 <code>DELETE FROM wp_postmeta</code> 三個 meta（<code>_elementor_element_cache</code>、<code>_elementor_page_assets</code>、<code>_elementor_css</code>）。線上站沒 SQL → <strong>換一頁全新部署</strong> 是最快路徑。</p>
+      </div>
+      <div class="pitfall">
+        <div class="label">PITFALL 08</div>
+        <p><strong>WP 主題 header 蓋住 Hero</strong> ／ 頁面上方多出 site title / page title</p>
+        <p class="sub">解：page template 設成 <code>elementor_canvas</code>。REST payload 同時設 <code>template: 'elementor_canvas'</code> 跟 <code>meta._wp_page_template: 'elementor_canvas'</code>，兩個都要。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 14E REST fallback 完整 payload ═══════════ -->
+  <section class="slide" data-title="REST fallback">
+    <span class="step-tag">DEPLOY ／ MCP 失敗時走這個</span>
+    <h2 class="slash-title">完整 REST 部署 payload（複製可用）</h2>
+    <div class="gold-line"></div>
+    <p class="sub" style="margin-top:14px; font-size:30px;">當 elementor MCP 回 <code>true</code> 但實際沒寫，直接走 WP REST。Python urllib 比 curl 穩（避控制字元）：</p>
+    <pre style="margin-top:14px; font-size:22px;">import json, base64, urllib.request
+
+USER='wp_admin'; PASS='xxxx xxxx xxxx xxxx xxxx xxxx'
+SITE='https://your-wp.example.com'; PAGE_ID=21
+
+auth = base64.b64encode(f'{USER}:{PASS}'.encode()).decode()
+elementor_data = json.dumps([
+  <span class="c"># your container array here</span>
+], ensure_ascii=False)
+
+payload = json.dumps({
+  'title': '頁面標題',
+  'status': 'publish',
+  'template': 'elementor_canvas',
+  'meta': {
+    '_elementor_data': elementor_data,           <span class="c"># 字串，不是 array</span>
+    '_elementor_edit_mode': 'builder',
+    '_elementor_template_type': 'wp-page',
+    '_elementor_version': '3.30.0',
+    '_wp_page_template': 'elementor_canvas',
+  }
+}, ensure_ascii=False).encode('utf-8')
+
+req = urllib.request.Request(
+  f'{SITE}/wp-json/wp/v2/pages/{PAGE_ID}',
+  data=payload, method='POST',
+  headers={'Authorization': f'Basic {auth}',
+           'Content-Type': 'application/json'})
+with urllib.request.urlopen(req, timeout=30) as r:
+  d = json.loads(r.read().decode('utf-8', errors='replace'), strict=False)
+print('modified:', d['modified'], 'template:', d['template'])</pre>
+  </section>
+
+  <!-- ═══════════ 15 進階 CLAUDE.md ═══════════ -->
+  <section class="slide" data-title="進階 CLAUDE.md">
+    <span class="step-tag">PRO TIP ／ 給專案上下文</span>
+    <h2 class="slash-title">寫一份 CLAUDE.md</h2>
+    <div class="gold-line"></div>
+    <p class="sub" style="margin-top:18px; font-size:34px;">在專案資料夾根目錄建一個 <code>CLAUDE.md</code>，Claude Code 自動讀。下面整段可直接複製：</p>
+    <pre style="margin-top:14px; font-size:22px;"># Figma → WP 工作坊：我的 trainee 練習頁
+
+## WP 連線
+- 站台: https://dbc.zeabur.app
+- 我的 page ID: 9
+- 帳號 / application password 在 onboarding.csv，呼叫 elementor mcp 時自動帶
+
+## Figma 來源
+- FileKey: 86JHZin3GoY4LsVq6otoDR
+- 主切 frame: node-id 1:14 (Hero)、1:321 (醫師團隊)
+
+## 部署規則
+- 一律用 elementor mcp，不要走 WP 後台
+- 每次部署完用 headless Chrome 截 1440 寬截圖驗證，存到 /tmp/wp-current.png
+- 開頁時 URL 一律加 ?fresh=now 強制清 Elementor 快取
+
+## 切版規則（從理仁案踩過的雷學到的）
+- Figma fills[0] 是最上層前景（反直覺），切版時要反過來看
+- 圖片有 transform/filter 的，用 /v1/images?ids=NODE export，不抓 imageRef
+- e-con 預設 padding + max-width 1140，做 full-bleed 要先全部 reset
+- 對抗 Elementor 預設樣式超過 3 個 !important 就改 HTML widget
+- 絕對定位的子元素，父容器一定要 position:relative
+
+## 失敗時
+- 先 download_page_to_file 備份目前 page 的 elementor JSON
+- 再嘗試新部署，部署失敗回滾</pre>
+    <p style="margin-top:18px; color:var(--gold); font-size:32px;">
+      ✦ 不用每次 prompt 都重講背景＋規則，省一半互動時間，踩過的雷不會再踩。
+    </p>
+  </section>
+
+  <!-- ═══════════ 16 進階 Builder ═══════════ -->
+  <section class="slide" data-title="進階 Builder">
+    <span class="step-tag">PRO TIP ／ Python Builder</span>
+    <h2 class="slash-title">大型頁面用 Builder</h2>
+    <div class="gold-line"></div>
+    <p class="sub" style="margin-top:18px; font-size:32px;">在工作坊資料夾跑這四步（terminal 直接執行）：</p>
+    <pre style="margin-top:12px; font-size:24px;"><span class="c"># 1. 複製範本</span>
+cp starter-builder.py my-build.py
+
+<span class="c"># 2. 編輯 PAGE_ID 跟 HTML 內容（第一段 PAGE_ID = 9 換成你的）</span>
+open my-build.py   <span class="c"># 或用你習慣的編輯器</span>
+
+<span class="c"># 3. 產出 Elementor JSON</span>
+python3 my-build.py
+<span class="c"># 預期看到：OUT /tmp/my-page.json (XXXXX bytes)</span>
+
+<span class="c"># 4. 切回 Claude Code，貼這段叫它部署</span>
+請用 elementor mcp 部署 /tmp/my-page.json 到 page 9，
+status 設為 publish，完成後告訴我頁面 URL。</pre>
+    <p style="margin-top:18px; font-size:32px;">優勢：</p>
+    <ul class="tidy" style="margin-top:6px;">
+      <li style="font-size:30px;">結構放 git，跨 session 不會弄丟</li>
+      <li style="font-size:30px;">大頁面改一行 Python 就重跑，不用重講需求</li>
+    </ul>
+  </section>
+
+  <!-- ═══════════ 17 線上 vs Local ═══════════ -->
+  <section class="slide" data-title="線上 vs Local">
+    <span class="step-tag">REAL WORLD ／ 套到客戶站</span>
+    <h2 class="slash-title">這個 pipeline 怎麼用在客戶案</h2>
+    <div class="gold-line"></div>
+    <p class="sub" style="margin-top:20px; font-size:36px;">MCP 串接 90% 一樣。差在「部署前後的配套」：</p>
+    <table style="width:100%; margin-top:20px; border-collapse:collapse; font-size:28px;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--gold-soft);">
+          <th style="text-align:left; padding:12px; color:var(--gold); letter-spacing:3px; font-weight:500; width:22%;">面向</th>
+          <th style="text-align:left; padding:12px; color:var(--gold); letter-spacing:3px; font-weight:500;">本機 Local（老師理仁案）</th>
+          <th style="text-align:left; padding:12px; color:var(--gold); letter-spacing:3px; font-weight:500;">線上客戶站</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--line);">
+          <td style="padding:12px;">清 Elementor cache</td>
+          <td style="padding:12px; color:var(--muted);">MySQL <code>DELETE _elementor_*</code> meta</td>
+          <td style="padding:12px; color:var(--muted);"><code>?fresh=t</code> 或 Elementor Tools 重建</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);">
+          <td style="padding:12px;">刪 post-{id}.css</td>
+          <td style="padding:12px; color:var(--muted);"><code>rm</code> 檔案</td>
+          <td style="padding:12px; color:var(--muted);">Zeabur Console / WP File Manager</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);">
+          <td style="padding:12px;">改錯回滾</td>
+          <td style="padding:12px; color:var(--muted);">隨便改，本機而已</td>
+          <td style="padding:12px; color:var(--muted);"><strong>先 <code>download_page_to_file</code> 備份</strong></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);">
+          <td style="padding:12px;">部署 status</td>
+          <td style="padding:12px; color:var(--muted);">直接 publish</td>
+          <td style="padding:12px; color:var(--muted);"><code>draft</code> 預覽 → 確認 → publish</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);">
+          <td style="padding:12px;">上傳圖資</td>
+          <td style="padding:12px; color:var(--muted);">丟 <code>wp-content/uploads/</code></td>
+          <td style="padding:12px; color:var(--muted);">REST <code>/wp/v2/media</code> POST</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);">
+          <td style="padding:12px;">REST API 限制</td>
+          <td style="padding:12px; color:var(--muted);">完全開放</td>
+          <td style="padding:12px; color:var(--muted);">Wordfence / 安全 plugin 可能擋</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);">
+          <td style="padding:12px;">沒 SQL／SSH 訪問權限</td>
+          <td style="padding:12px; color:var(--muted);">N/A</td>
+          <td style="padding:12px; color:var(--muted);">第二次部署 silent fail → <strong>換新頁部署</strong></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);">
+          <td style="padding:12px;">主題 header 蓋住設計</td>
+          <td style="padding:12px; color:var(--muted);">改主題 / 用 Hello Elementor</td>
+          <td style="padding:12px; color:var(--muted);">page template = <code>elementor_canvas</code></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);">
+          <td style="padding:12px;">SVG icon 上傳</td>
+          <td style="padding:12px; color:var(--muted);">直接丟 <code>uploads/</code></td>
+          <td style="padding:12px; color:var(--muted);">先裝 Safe SVG plugin</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top:24px; color:var(--gold); font-size:32px;">
+      ✦ 9 條配套規則記起來，今天學的全部能直接套到客戶案。
+    </p>
+  </section>
+
+  <!-- ═══════════ 18 收尾 ═══════════ -->
+  <section class="slide center" data-title="開始">
+    <h2 class="slash-title" style="margin-bottom:32px;">準備好了嗎</h2>
+    <div class="gold-line" style="margin:24px auto;"></div>
+    <p class="lead" style="max-width:1200px; margin-top:32px; font-size:42px;">
+      打開 Claude Code，把 onboarding 表打開放手邊。
+    </p>
+    <p class="lead" style="margin-top:18px; font-size:42px;">
+      你的第一個指令會是：
+    </p>
+    <pre class="lg" style="margin-top:36px; max-width:1300px; text-align:left; font-size:30px;">請用 elementor mcp 幫我抓 page 9 的內容（page ID 換成你的），
+列出標題、slug、status，以及目前 elementor JSON 的結構摘要。</pre>
+    <p style="margin-top:64px; color:var(--gold); font-family:'Noto Serif TC', serif; font-size:40px; letter-spacing:8px;">
+      開始切版
+    </p>
+    <div class="meta-strip" style="margin-top:48px; justify-content:center;">
+      <span>有問題舉手</span>
+      <span>玩壞了無所謂</span>
+      <span>一週後 reset</span>
+    </div>
+  </section>
+
+  <!-- Progress + footer -->
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="deck-footer">
+    <span><span id="slideTitle">封面</span></span>
+    <span><span id="slideNum">01</span> / <span id="slideTotal">20</span></span>
+  </div>
+  <div class="nav-hint">
+    <kbd>←</kbd> <kbd>→</kbd> 切換　<kbd>F</kbd> 全螢幕　<kbd>P</kbd> 列印
+  </div>
+
+</div>
+</div>
+
+<script>
+(function(){
+  // 16:9 stage scaling — keep .deck always at 1920×1080, scale to fit window
+  const deck = document.getElementById('deck');
+  function fit(){
+    const w = window.innerWidth, h = window.innerHeight;
+    const scale = Math.min(w/1920, h/1080);
+    deck.style.transform = 'scale('+scale+')';
+    // center the scaled deck
+    const sw = 1920*scale, sh = 1080*scale;
+    deck.style.position = 'absolute';
+    deck.style.left = ((w-sw)/2) + 'px';
+    deck.style.top  = ((h-sh)/2) + 'px';
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  // Slide navigation
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let idx = 0;
+  const numEl = document.getElementById('slideNum');
+  const totalEl = document.getElementById('slideTotal');
+  const titleEl = document.getElementById('slideTitle');
+  const progressEl = document.getElementById('progressFill');
+  totalEl.textContent = String(total).padStart(2,'0');
+
+  function go(n){
+    idx = Math.max(0, Math.min(total-1, n));
+    slides.forEach((s,i)=>{
+      s.classList.toggle('is-active', i === idx);
+    });
+    numEl.textContent = String(idx+1).padStart(2,'0');
+    titleEl.textContent = slides[idx].dataset.title || '';
+    progressEl.style.width = (((idx+1)/total)*100)+'%';
+    history.replaceState(null,'','#'+(idx+1));
+  }
+  function next(){ go(idx+1); }
+  function prev(){ go(idx-1); }
+
+  document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight' || e.key===' ' || e.key==='PageDown'){ e.preventDefault(); next(); }
+    else if(e.key==='ArrowLeft' || e.key==='PageUp'){ e.preventDefault(); prev(); }
+    else if(e.key==='Home'){ go(0); }
+    else if(e.key==='End'){ go(total-1); }
+    else if(e.key==='f' || e.key==='F'){
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+    else if(e.key==='p' || e.key==='P'){ window.print(); }
+  });
+
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e=>{ touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e=>{
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if(Math.abs(dx) > 60){ if(dx < 0) next(); else prev(); }
+  });
+
+  document.addEventListener('click', e=>{
+    if(e.target.closest('a,button,input,textarea,pre,code')) return;
+    if(e.clientX > window.innerWidth * 0.5) next();
+    else prev();
+  });
+
+  const initial = parseInt((location.hash||'').replace('#','')) || 1;
+  go(initial - 1);
+
+  // Copy buttons on every <pre>
+  document.querySelectorAll('pre').forEach(pre => {
+    if(pre.querySelector('.copy-btn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = '複製';
+    btn.setAttribute('aria-label', '複製代碼');
+    pre.appendChild(btn);
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const clone = pre.cloneNode(true);
+      const cloneBtn = clone.querySelector('.copy-btn');
+      if(cloneBtn) cloneBtn.remove();
+      const text = clone.textContent.replace(/^\s+|\s+$/g, '');
+      const done = ()=>{
+        btn.textContent = '已複製';
+        btn.classList.add('copied');
+        setTimeout(()=>{
+          btn.textContent = '複製';
+          btn.classList.remove('copied');
+        }, 1500);
+      };
+      const fail = ()=>{
+        btn.textContent = '失敗';
+        setTimeout(()=>{ btn.textContent = '複製'; }, 1500);
+      };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done, ()=>{
+          // fallback to execCommand
+          try{
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position='fixed'; ta.style.opacity='0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            done();
+          }catch(err){ fail(); }
+        });
+      } else {
+        try{
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position='fixed'; ta.style.opacity='0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          done();
+        }catch(err){ fail(); }
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
